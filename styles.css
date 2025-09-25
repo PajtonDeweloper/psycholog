@@ -927,34 +927,19 @@ html {
     transform: rotate(45deg);
 }
 
+/* FAQ Answer - Optimized for mobile performance */
 .faq-answer {
     padding: 0 25px;
     max-height: 0;
     overflow: hidden;
     background: var(--light-gray);
-    transform: scaleY(0);
-    transform-origin: top;
-    transition: transform 0.25s ease-out;
-    will-change: transform;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+    will-change: max-height;
 }
 
 .faq-item.active .faq-answer {
     padding: 25px;
-    max-height: none;
-    transform: scaleY(1);
-}
-
-/* Fallback for browsers that don't support transform well */
-@supports not (transform: scaleY(1)) {
-    .faq-answer {
-        transform: none;
-        transition: max-height 0.25s ease-out;
-        max-height: 0;
-    }
-    
-    .faq-item.active .faq-answer {
-        max-height: 150px;
-    }
+    max-height: 200px; /* Adjust based on your content */
 }
 
 .faq-answer p {
@@ -1632,6 +1617,21 @@ html {
         max-height: 85vh;
     }
     
+    /* FAQ optimizations for small mobile */
+    .faq-answer {
+        transition: max-height 0.2s ease-out, padding 0.2s ease-out;
+    }
+    
+    .faq-item.active .faq-answer {
+        max-height: 300px;
+        padding: 15px;
+    }
+    
+    .faq-question {
+        padding: 15px;
+        font-size: 16px;
+    }
+    
     .pricing-note {
         padding: 15px;
         font-size: 14px;
@@ -1675,42 +1675,24 @@ html {
         margin-bottom: 20px;
     }
     
-    /* Optimize FAQ animations for mobile */
+    /* Mobile FAQ optimizations */
     .faq-answer {
-        transition: transform 0.2s ease-out;
-    }
-    
-    .faq-toggle {
-        transition: transform 0.2s ease;
-    }
-    
-    /* Reduce motion for better mobile performance */
-    .faq-item {
-        transition: box-shadow 0.2s ease;
-    }
-    
-    .faq-question {
-        transition: background 0.2s ease;
-    }
-    
-    /* Force hardware acceleration on mobile */
-    .faq-answer,
-    .faq-toggle {
-        backface-visibility: hidden;
-        perspective: 1000px;
-    }
-    
-    /* Simplify FAQ layout on mobile */
-    .faq-question {
-        padding: 20px 15px;
-    }
-    
-    .faq-answer {
-        padding: 0 15px;
+        transition: max-height 0.25s ease-out, padding 0.25s ease-out;
     }
     
     .faq-item.active .faq-answer {
+        max-height: 250px; /* Slightly more space on mobile */
         padding: 20px 15px;
+    }
+    
+    .faq-question {
+        padding: 20px 15px;
+        transition: background 0.2s ease;
+    }
+    
+    /* Hide FAQ image on mobile */
+    .faq-image {
+        display: none;
     }
     
     /* Reduce gap between FAQ items on mobile */
@@ -1718,7 +1700,7 @@ html {
         gap: 15px;
     }
     
-    /* Disable complex shadows on mobile */
+    /* Simplify shadows on mobile for better performance */
     .faq-item {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }

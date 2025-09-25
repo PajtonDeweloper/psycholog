@@ -471,64 +471,46 @@ function improveAccessibility() {
     }
 }
 
-// FAQ Functionality - Heavily optimized for mobile
+// FAQ Functionality - Optimized for all devices
 function initFAQFunctionality() {
     const faqItems = document.querySelectorAll('.faq-item');
-    const isMobile = window.innerWidth <= 768;
     
     faqItems.forEach(item => {
         const question = item.querySelector('.faq-question');
         const answer = item.querySelector('.faq-answer');
         
-        // Optimize for mobile devices
-        if (isMobile) {
-            // Disable hover effects on mobile
-            question.style.transition = 'none';
-            item.style.transition = 'none';
-        }
+        if (!question || !answer) return;
         
-        // Use touchstart on mobile for faster response
-        const eventType = isMobile ? 'touchstart' : 'click';
-        
-        question.addEventListener(eventType, (e) => {
+        // Use only click event for simplicity and compatibility
+        question.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Prevent double-tap zoom on mobile
-            if (isMobile) {
-                e.stopPropagation();
-            }
-            
-            // Debounce rapid clicks
+            // Debounce - prevent rapid clicks during animation
             if (item.dataset.animating === 'true') return;
             item.dataset.animating = 'true';
             
-            // Use double requestAnimationFrame for better performance
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    item.classList.toggle('active');
-                    
-                    // Reset debounce after animation
-                    setTimeout(() => {
-                        item.dataset.animating = 'false';
-                    }, isMobile ? 200 : 250);
-                });
-            });
+            // Toggle active state
+            const isActive = item.classList.contains('active');
+            item.classList.toggle('active');
+            
+            // Reset debounce after animation completes (300ms)
+            setTimeout(() => {
+                item.dataset.animating = 'false';
+            }, 300);
             
             // Remove focus to prevent outline
-            e.target.blur();
-        }, { passive: false });
+            this.blur();
+        });
         
-        // Add keyboard support (only for desktop)
-        if (!isMobile) {
-            question.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    question.click();
-                }
-            });
-        }
+        // Keyboard support
+        question.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
         
-        // Make focusable
+        // Accessibility attributes
         question.setAttribute('tabindex', '0');
         question.setAttribute('role', 'button');
         question.setAttribute('aria-expanded', 'false');
