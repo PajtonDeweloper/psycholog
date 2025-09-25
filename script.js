@@ -471,7 +471,7 @@ function improveAccessibility() {
     }
 }
 
-// FAQ Functionality - Optimized for all devices
+// FAQ Functionality - Optimized for all devices with scroll detection
 function initFAQFunctionality() {
     const faqItems = document.querySelectorAll('.faq-item');
     
@@ -481,34 +481,77 @@ function initFAQFunctionality() {
         
         if (!question || !answer) return;
         
-        // Use only click event for simplicity and compatibility
+        // Variables to track touch/scroll behavior
+        let touchStartY = 0;
+        let touchStartTime = 0;
+        let isScrolling = false;
+        
+        // Touch start - record initial position
+        question.addEventListener('touchstart', function(e) {
+            touchStartY = e.touches[0].clientY;
+            touchStartTime = Date.now();
+            isScrolling = false;
+        }, { passive: true });
+        
+        // Touch move - detect if user is scrolling
+        question.addEventListener('touchmove', function(e) {
+            const touchY = e.touches[0].clientY;
+            const deltaY = Math.abs(touchY - touchStartY);
+            
+            // If moved more than 10px vertically, consider it scrolling
+            if (deltaY > 10) {
+                isScrolling = true;
+            }
+        }, { passive: true });
+        
+        // Touch end - only trigger if not scrolling
+        question.addEventListener('touchend', function(e) {
+            const touchDuration = Date.now() - touchStartTime;
+            
+            // Only trigger if:
+            // 1. Not scrolling
+            // 2. Touch duration less than 300ms (quick tap)
+            // 3. Not currently animating
+            if (!isScrolling && touchDuration < 300 && item.dataset.animating !== 'true') {
+                e.preventDefault();
+                toggleFAQ(item);
+            }
+        }, { passive: false });
+        
+        // Click event for desktop and as fallback
         question.addEventListener('click', function(e) {
+            // Prevent if this was triggered by touch (avoid double trigger)
+            if (e.detail === 0) return; // detail === 0 means triggered by touch
+            
             e.preventDefault();
-            
-            // Debounce - prevent rapid clicks during animation
-            if (item.dataset.animating === 'true') return;
-            item.dataset.animating = 'true';
-            
-            // Toggle active state
-            const isActive = item.classList.contains('active');
-            item.classList.toggle('active');
-            
-            // Reset debounce after animation completes (300ms)
-            setTimeout(() => {
-                item.dataset.animating = 'false';
-            }, 300);
-            
-            // Remove focus to prevent outline
-            this.blur();
+            toggleFAQ(item);
         });
         
         // Keyboard support
         question.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                this.click();
+                toggleFAQ(item);
             }
         });
+        
+        // FAQ toggle function
+        function toggleFAQ(faqItem) {
+            // Debounce - prevent rapid clicks during animation
+            if (faqItem.dataset.animating === 'true') return;
+            faqItem.dataset.animating = 'true';
+            
+            // Toggle active state
+            faqItem.classList.toggle('active');
+            
+            // Reset debounce after animation completes (300ms)
+            setTimeout(() => {
+                faqItem.dataset.animating = 'false';
+            }, 300);
+            
+            // Remove focus to prevent outline
+            question.blur();
+        }
         
         // Accessibility attributes
         question.setAttribute('tabindex', '0');
