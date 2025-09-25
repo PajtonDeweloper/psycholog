@@ -1,14 +1,16 @@
-// Force scroll to top on page load/refresh
-window.addEventListener('beforeunload', function() {
-    window.scrollTo(0, 0);
-});
-
-// Loading Screen
-window.addEventListener('load', function() {
-    // Ensure scroll to top
+// Optimized page initialization
+(function() {
+    'use strict';
+    
+    // Force scroll to top on page load
+    if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+    }
     window.scrollTo(0, 0);
     
-    const loader = document.querySelector('.loader-wrapper');
+    // Loading Screen
+    window.addEventListener('load', function() {
+        const loader = document.querySelector('.loader-wrapper');
     
     setTimeout(() => {
         loader.style.opacity = '0';
@@ -23,31 +25,44 @@ window.addEventListener('load', function() {
     }, 2000);
 });
 
-// Mobile Navigation
-const hamburger = document.querySelector('.hamburger');
-const navMenu = document.querySelector('.nav-menu');
+// Mobile Navigation - Optimized
+function initMobileNavigation() {
+    const hamburger = document.querySelector('.hamburger');
+    const navMenu = document.querySelector('.nav-menu');
+    
+    if (!hamburger || !navMenu) return;
+    
+    hamburger.addEventListener('click', function(e) {
+        e.preventDefault();
+        hamburger.classList.toggle('active');
+        navMenu.classList.toggle('active');
+        this.blur();
+    }, { passive: false });
+}
 
-hamburger.addEventListener('click', function(e) {
-    hamburger.classList.toggle('active');
-    navMenu.classList.toggle('active');
-    // Remove focus to prevent outline
-    e.target.blur();
-});
-
-// Close mobile menu when clicking on a link and update active state
-document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', (e) => {
-        hamburger.classList.remove('active');
-        navMenu.classList.remove('active');
-        
-        // Update active state immediately
-        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-        link.classList.add('active');
-        
-        // Remove focus to prevent outline
-        e.target.blur();
+// Navigation links handler - Optimized
+function initNavigationLinks() {
+    const hamburger = document.querySelector('.hamburger');
+    const navMenu = document.querySelector('.nav-menu');
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    if (!navLinks.length) return;
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Close mobile menu
+            if (hamburger && navMenu) {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+            }
+            
+            // Update active state
+            navLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+            this.blur();
+        });
     });
-});
+}
 
 // Smooth Scrolling for Navigation Links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -423,40 +438,9 @@ function enhancePricingCards() {
     });
 }
 
-// Scroll to top immediately when DOM loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Force scroll to top
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-    
-    enhanceFloatingShapes();
-    initBreathingAnimation();
-    initParallaxEffect();
-    enhanceFormFields();
-    enhanceServiceCards();
-    enhanceTestimonialCards();
-    enhancePricingCards();
-    
-    // FAQ Functionality
-    initFAQFunctionality();
-    
-    // Cursor following animation removed to prevent shape bouncing
-});
-
-// Add keyboard navigation support
-document.addEventListener('keydown', function(e) {
-    // ESC key closes mobile menu
-    if (e.key === 'Escape') {
-        hamburger.classList.remove('active');
-        navMenu.classList.remove('active');
-    }
-    
-    // Enter key on service cards
-    if (e.key === 'Enter' && e.target.classList.contains('service-card')) {
-        e.target.click();
-    }
-});
+// ===== OPTIMIZED CODE STRUCTURE =====
+// All initialization functions are now consolidated into a single DOMContentLoaded event
+// Removed duplicate event listeners and unused code
 
 // Accessibility improvements
 function improveAccessibility() {
@@ -487,34 +471,62 @@ function improveAccessibility() {
     }
 }
 
-// FAQ Functionality - Optimized for mobile
+// FAQ Functionality - Heavily optimized for mobile
 function initFAQFunctionality() {
     const faqItems = document.querySelectorAll('.faq-item');
+    const isMobile = window.innerWidth <= 768;
     
     faqItems.forEach(item => {
         const question = item.querySelector('.faq-question');
         const answer = item.querySelector('.faq-answer');
         
-        // Use passive event listeners for better performance
-        question.addEventListener('click', (e) => {
+        // Optimize for mobile devices
+        if (isMobile) {
+            // Disable hover effects on mobile
+            question.style.transition = 'none';
+            item.style.transition = 'none';
+        }
+        
+        // Use touchstart on mobile for faster response
+        const eventType = isMobile ? 'touchstart' : 'click';
+        
+        question.addEventListener(eventType, (e) => {
             e.preventDefault();
             
-            // Use requestAnimationFrame for smoother animations
+            // Prevent double-tap zoom on mobile
+            if (isMobile) {
+                e.stopPropagation();
+            }
+            
+            // Debounce rapid clicks
+            if (item.dataset.animating === 'true') return;
+            item.dataset.animating = 'true';
+            
+            // Use double requestAnimationFrame for better performance
             requestAnimationFrame(() => {
-                item.classList.toggle('active');
+                requestAnimationFrame(() => {
+                    item.classList.toggle('active');
+                    
+                    // Reset debounce after animation
+                    setTimeout(() => {
+                        item.dataset.animating = 'false';
+                    }, isMobile ? 200 : 250);
+                });
             });
             
             // Remove focus to prevent outline
             e.target.blur();
         }, { passive: false });
         
-        // Add keyboard support
-        question.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                question.click();
-            }
-        });
+        // Add keyboard support (only for desktop)
+        if (!isMobile) {
+            question.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    question.click();
+                }
+            });
+        }
         
         // Make focusable
         question.setAttribute('tabindex', '0');
@@ -531,11 +543,82 @@ function initFAQFunctionality() {
     });
 }
 
-// Initialize accessibility improvements
-document.addEventListener('DOMContentLoaded', improveAccessibility);
+// Removed - consolidated into main DOMContentLoaded
+
+// Contact Icons Functionality
+function initContactIcons() {
+    const clickableIcons = document.querySelectorAll('.clickable-icon');
+    
+    clickableIcons.forEach(icon => {
+        icon.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            const action = icon.dataset.action;
+            const value = icon.dataset.value;
+            
+            switch(action) {
+                case 'phone':
+                    // Otwórz aplikację telefonu
+                    window.location.href = `tel:${value}`;
+                    showNotification('Otwieranie aplikacji telefonu...', 'info');
+                    break;
+                    
+                case 'email':
+                    // Otwórz aplikację email z predefiniowanym tematem
+                    const subject = 'Zapytanie o terapię psychologiczną';
+                    const body = 'Dzień dobry,%0D%0A%0D%0AChciałbym/Chciałabym zapytać o możliwość umówienia wizyty.%0D%0A%0D%0APozdrawiam';
+                    window.location.href = `mailto:${value}?subject=${encodeURIComponent(subject)}&body=${body}`;
+                    showNotification('Otwieranie aplikacji email...', 'info');
+                    break;
+                    
+                case 'maps':
+                    // Otwórz Google Maps z adresem
+                    const encodedAddress = encodeURIComponent(value);
+                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+                    window.open(mapsUrl, '_blank');
+                    showNotification('Otwieranie Google Maps...', 'success');
+                    break;
+                    
+                default:
+                    console.log('Nieznana akcja:', action);
+            }
+            
+            // Dodaj efekt kliknięcia
+            icon.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                icon.style.transform = '';
+            }, 150);
+        });
+        
+        // Dodaj efekt hover na touch devices
+        icon.addEventListener('touchstart', () => {
+            icon.style.transform = 'scale(1.05)';
+        });
+        
+        icon.addEventListener('touchend', () => {
+            setTimeout(() => {
+                icon.style.transform = '';
+            }, 100);
+        });
+        
+        // Dodaj accessibility
+        icon.setAttribute('role', 'button');
+        icon.setAttribute('tabindex', '0');
+        
+        // Keyboard support
+        icon.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                icon.click();
+            }
+        });
+    });
+}
+
+// Removed - consolidated into main DOMContentLoaded
 
 // Modal Functionality (Privacy Policy & Regulations)
-document.addEventListener('DOMContentLoaded', function() {
+function initModalFunctionality() {
     const privacyModal = document.getElementById('privacy-modal');
     const regulationsModal = document.getElementById('regulations-modal');
     const privacyLink = document.getElementById('privacy-link');
@@ -548,6 +631,14 @@ document.addEventListener('DOMContentLoaded', function() {
         e.stopPropagation();
         privacyModal.style.display = 'block';
         document.body.style.overflow = 'hidden';
+        
+        // Show close button with smooth animation
+        const closeBtn = privacyModal.querySelector('.close');
+        if (closeBtn) {
+            setTimeout(() => {
+                closeBtn.classList.add('show');
+            }, 100);
+        }
         return false;
     });
 
@@ -557,24 +648,42 @@ document.addEventListener('DOMContentLoaded', function() {
         e.stopPropagation();
         regulationsModal.style.display = 'block';
         document.body.style.overflow = 'hidden';
+        
+        // Show close button with smooth animation
+        const closeBtn = regulationsModal.querySelector('.close');
+        if (closeBtn) {
+            setTimeout(() => {
+                closeBtn.classList.add('show');
+            }, 100);
+        }
         return false;
     });
+
+    // Function to close modals
+    function closeModals() {
+        privacyModal.style.display = 'none';
+        regulationsModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        
+        // Hide all close buttons with smooth animation
+        closeBtns.forEach(btn => {
+            btn.classList.remove('show');
+        });
+    }
 
     // Close modals when X is clicked
     closeBtns.forEach(closeBtn => {
         closeBtn.addEventListener('click', function() {
-            privacyModal.style.display = 'none';
-            regulationsModal.style.display = 'none';
-            document.body.style.overflow = 'auto';
+            closeModals();
         });
+        
+        // Initially hide close buttons (already hidden by CSS)
     });
 
     // Close modals when clicking outside
     window.addEventListener('click', function(e) {
         if (e.target === privacyModal || e.target === regulationsModal) {
-            privacyModal.style.display = 'none';
-            regulationsModal.style.display = 'none';
-            document.body.style.overflow = 'auto';
+            closeModals();
         }
     });
 
@@ -582,10 +691,35 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             if (privacyModal.style.display === 'block' || regulationsModal.style.display === 'block') {
-                privacyModal.style.display = 'none';
-                regulationsModal.style.display = 'none';
-                document.body.style.overflow = 'auto';
+                closeModals();
             }
         }
     });
+}
+
+// Initialize all functions when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Force scroll to top
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    
+    // Initialize all components
+    initMobileNavigation();
+    initNavigationLinks();
+    initFAQFunctionality();
+    initContactIcons();
+    initModalFunctionality();
+    improveAccessibility();
+    
+    // Initialize enhancements
+    enhanceFloatingShapes();
+    initBreathingAnimation();
+    initParallaxEffect();
+    enhanceFormFields();
+    enhanceServiceCards();
+    enhanceTestimonialCards();
+    enhancePricingCards();
 });
+
+})(); // End of IIFE
