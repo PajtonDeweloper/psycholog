@@ -77,6 +77,31 @@ body {
     overflow-x: hidden;
 }
 
+/* Prevent horizontal scrolling on all elements */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+* {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Ensure containers don't overflow */
+.container, 
+.hero-content, 
+.about-content, 
+.approach-content, 
+.contact-content,
+.services-grid,
+.testimonials-grid,
+.pricing-grid,
+.faq-content {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
 /* Force scroll to top on page load */
 html {
     scroll-behavior: smooth;
@@ -917,8 +942,9 @@ html {
     padding: 0 25px;
     max-height: 0;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: max-height 0.3s ease, padding 0.3s ease;
     background: var(--light-gray);
+    will-change: max-height, padding;
 }
 
 .faq-item.active .faq-answer {
@@ -1521,6 +1547,7 @@ html {
     
     .hero-image {
         order: -1;
+        display: none; /* Hide brain image on mobile */
     }
     
     .btn {
@@ -1598,6 +1625,15 @@ html {
     .loader-title {
         font-size: 2rem;
         margin-bottom: 20px;
+    }
+    
+    /* Optimize FAQ animations for mobile */
+    .faq-answer {
+        transition: max-height 0.2s ease-out, padding 0.2s ease-out;
+    }
+    
+    .faq-toggle {
+        transition: transform 0.2s ease;
     }
 }
 

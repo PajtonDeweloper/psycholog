@@ -181,36 +181,15 @@ function initScrollAnimations() {
     });
 }
 
-// Floating Shapes Animation Enhancement (optimized)
+// Floating Shapes Animation Enhancement (optimized) - DISABLED MOUSE INTERACTION
 function enhanceFloatingShapes() {
     const shapes = document.querySelectorAll('.floating-shape');
-    let mouseX = 0, mouseY = 0;
-    let animationId;
     
-    function updateShapes() {
-        shapes.forEach((shape, index) => {
-            const moveX = (mouseX - 50) * 0.5;
-            const moveY = (mouseY - 50) * 0.5;
-            
-            shape.style.transform = `translate3d(${moveX}px, ${moveY}px, 0) rotate(${moveX * 0.5}deg)`;
-        });
-    }
-    
-    function throttledMouseMove(e) {
-        mouseX = (e.clientX / window.innerWidth) * 100;
-        mouseY = (e.clientY / window.innerHeight) * 100;
-        
-        if (!animationId) {
-            animationId = requestAnimationFrame(() => {
-                updateShapes();
-                animationId = null;
-            });
-        }
-    }
-    
-    if (shapes.length > 0) {
-        document.addEventListener('mousemove', throttledMouseMove);
-    }
+    // Remove any mouse interaction - shapes will only use CSS animation
+    shapes.forEach((shape) => {
+        shape.style.transform = 'none';
+        shape.style.transition = 'none';
+    });
 }
 
 // Contact Form Handling
@@ -462,35 +441,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // FAQ Functionality
     initFAQFunctionality();
     
-    // Add subtle cursor following effect
-    let mouseX = 0;
-    let mouseY = 0;
-    let cursorX = 0;
-    let cursorY = 0;
-    
-    document.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-    });
-    
-    // Smooth cursor following for floating shapes
-    function animateCursor() {
-        cursorX += (mouseX - cursorX) * 0.1;
-        cursorY += (mouseY - cursorY) * 0.1;
-        
-        const shapes = document.querySelectorAll('.floating-shape');
-        shapes.forEach((shape, index) => {
-            const speed = 0.02 + (index * 0.01);
-            const x = (cursorX - window.innerWidth / 2) * speed;
-            const y = (cursorY - window.innerHeight / 2) * speed;
-            
-            shape.style.transform = `translate(${x}px, ${y}px)`;
-        });
-        
-        requestAnimationFrame(animateCursor);
-    }
-    
-    animateCursor();
+    // Cursor following animation removed to prevent shape bouncing
 });
 
 // Add keyboard navigation support
@@ -536,7 +487,7 @@ function improveAccessibility() {
     }
 }
 
-// FAQ Functionality
+// FAQ Functionality - Optimized for mobile
 function initFAQFunctionality() {
     const faqItems = document.querySelectorAll('.faq-item');
     
@@ -544,12 +495,18 @@ function initFAQFunctionality() {
         const question = item.querySelector('.faq-question');
         const answer = item.querySelector('.faq-answer');
         
+        // Use passive event listeners for better performance
         question.addEventListener('click', (e) => {
-            // Simply toggle current item without closing others
-            item.classList.toggle('active');
+            e.preventDefault();
+            
+            // Use requestAnimationFrame for smoother animations
+            requestAnimationFrame(() => {
+                item.classList.toggle('active');
+            });
+            
             // Remove focus to prevent outline
             e.target.blur();
-        });
+        }, { passive: false });
         
         // Add keyboard support
         question.addEventListener('keydown', (e) => {
