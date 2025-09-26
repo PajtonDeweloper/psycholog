@@ -722,6 +722,97 @@ function initModalFunctionality() {
     });
 }
 
+// Map lazy loading and performance optimization
+function initMapOptimizations() {
+    const mapContainer = document.querySelector('.map-container');
+    const mapIframe = document.querySelector('.map-container iframe');
+    
+    if (!mapContainer || !mapIframe) return;
+    
+    // Store original src
+    const originalSrc = mapIframe.src;
+    
+    // Initially remove src to prevent loading
+    mapIframe.removeAttribute('src');
+    mapIframe.style.background = '#f0f0f0';
+    mapIframe.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 14px;">Kliknij aby załadować mapę</div>';
+    
+    // Create intersection observer for lazy loading
+    const mapObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                loadMap();
+                mapObserver.unobserve(mapContainer);
+            }
+        });
+    }, {
+        root: null,
+        rootMargin: '100px',
+        threshold: 0.1
+    });
+    
+    // Start observing
+    mapObserver.observe(mapContainer);
+    
+    // Also add click to load functionality
+    let mapLoaded = false;
+    mapContainer.addEventListener('click', loadMap);
+    
+    function loadMap() {
+        if (mapLoaded) return;
+        mapLoaded = true;
+        
+        // Show loading state
+        mapIframe.style.background = 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%)';
+        mapIframe.style.backgroundSize = '20px 20px';
+        mapIframe.style.backgroundPosition = '0 0, 0 10px, 10px -10px, -10px 0px';
+        mapIframe.style.animation = 'mapLoading 1s linear infinite';
+        
+        // Load the map
+        mapIframe.src = originalSrc;
+        
+        // Remove loading animation when map loads
+        mapIframe.addEventListener('load', () => {
+            mapIframe.style.background = 'none';
+            mapIframe.style.animation = 'none';
+        });
+    }
+    
+    // Mobile performance optimizations
+    if (window.innerWidth <= 768) {
+        // Reduce map height on mobile
+        mapIframe.style.height = '200px';
+        
+        // Add touch handling to prevent scroll conflicts
+        mapContainer.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+        }, { passive: true });
+        
+        mapContainer.addEventListener('touchmove', (e) => {
+            e.stopPropagation();
+        }, { passive: true });
+    }
+}
+
+// Adjust navbar position based on demo notice height
+function adjustNavbarPosition() {
+    const demoNotice = document.querySelector('.demo-notice');
+    const navbar = document.querySelector('.navbar');
+    
+    if (demoNotice && navbar) {
+        const demoNoticeHeight = demoNotice.offsetHeight;
+        navbar.style.top = demoNoticeHeight + 'px';
+        
+        // Also adjust hero section padding
+        const hero = document.querySelector('.hero');
+        if (hero) {
+            const navbarHeight = navbar.offsetHeight;
+            const totalOffset = demoNoticeHeight + navbarHeight + 20; // 20px extra padding
+            hero.style.paddingTop = totalOffset + 'px';
+        }
+    }
+}
+
 // Initialize all functions when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     // Force scroll to top
@@ -729,22 +820,34 @@ document.addEventListener('DOMContentLoaded', function() {
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
     
+    // Adjust navbar position
+    adjustNavbarPosition();
+    
+    // Re-adjust on window resize
+    window.addEventListener('resize', adjustNavbarPosition);
+    
     // Initialize all components
     initMobileNavigation();
     initNavigationLinks();
     initFAQFunctionality();
     initContactIcons();
     initModalFunctionality();
+    initMapOptimizations();
     improveAccessibility();
     
-    // Initialize enhancements
+    // Initialize enhancements (conditional for mobile performance)
     enhanceFloatingShapes();
-    initBreathingAnimation();
+    
+    // Only initialize heavy animations on larger screens
+    if (window.innerWidth > 768) {
+        initBreathingAnimation();
+        enhanceServiceCards();
+        enhanceTestimonialCards();
+        enhancePricingCards();
+    }
+    
     initParallaxEffect();
     enhanceFormFields();
-    enhanceServiceCards();
-    enhanceTestimonialCards();
-    enhancePricingCards();
 });
 
 })(); // End of IIFE

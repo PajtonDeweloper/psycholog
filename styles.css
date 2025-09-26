@@ -181,10 +181,15 @@ html {
     0% { background-position: -200% 0; }
 }
 
+@keyframes mapLoading {
+    0% { background-position: 0 0, 0 10px, 10px -10px, -10px 0px; }
+    100% { background-position: 20px 20px, 20px 30px, 30px 10px, 10px 20px; }
+}
+
 /* Navigation */
 .navbar {
     position: fixed;
-    top: 32px;
+    top: 32px; /* Will be adjusted dynamically based on demo notice height */
     left: 0;
     right: 0;
     background: rgba(255, 255, 255, 0.95);
@@ -1237,6 +1242,31 @@ html {
     box-shadow: var(--shadow-soft);
     backdrop-filter: blur(10px);
     margin-top: 30px;
+    /* Performance optimization */
+    contain: layout;
+    will-change: auto;
+}
+
+/* Mobile map optimizations */
+@media (max-width: 768px) {
+    .map-section {
+        padding: 20px;
+        margin-top: 25px;
+        backdrop-filter: none; /* Remove blur on mobile for performance */
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .map-container {
+        /* Reduce complexity on mobile */
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .map-container iframe {
+        height: 200px;
+        /* Additional mobile optimizations */
+        pointer-events: auto;
+        touch-action: manipulation;
+    }
 }
 
 .map-section h3 {
@@ -1259,6 +1289,10 @@ html {
     height: 250px;
     border: none;
     display: block;
+    /* Mobile performance optimization */
+    will-change: auto;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
 }
 
 .map-info {
@@ -1448,7 +1482,7 @@ html {
     padding: 6px 20px;
     font-size: 13px;
     font-weight: 500;
-    z-index: 9999;
+    z-index: 10002; /* Higher than navbar */
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     animation: slideDown 0.5s ease-out;
 }
@@ -1475,16 +1509,37 @@ html {
 /* Mobile adjustments for demo notice */
 @media (max-width: 768px) {
     .demo-notice {
-        font-size: 11px;
-        padding: 4px 15px;
+        font-size: 10px;
+        padding: 3px 10px;
+        line-height: 1.2;
+        position: fixed;
+        z-index: 10002;
+    }
+    
+    .demo-notice p {
+        flex-wrap: wrap;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+        word-break: break-word;
     }
     
     .navbar {
-        top: 26px;
+        top: 28px; /* Adjusted for smaller demo notice */
+    }
+    
+    .nav-container {
+        height: 70px;
+        padding: 0 15px;
+    }
+    
+    .logo-text {
+        font-size: 20px;
+        margin-top: 2px;
     }
     
     .hero {
-        padding-top: 90px;
+        padding-top: 100px; /* Adjusted for demo notice + navbar */
     }
 }
 
@@ -1592,6 +1647,34 @@ html {
 @media (max-width: 480px) {
     .container {
         padding: 0 15px;
+    }
+    
+    .demo-notice {
+        font-size: 9px;
+        padding: 2px 8px;
+        min-height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        z-index: 10002;
+    }
+    
+    .navbar {
+        top: 22px; /* Adjusted for very small demo notice */
+    }
+    
+    .nav-container {
+        height: 65px;
+        padding: 0 12px;
+    }
+    
+    .logo-text {
+        font-size: 18px;
+    }
+    
+    .hero {
+        padding-top: 90px; /* Adjusted for demo notice + smaller navbar */
     }
     
     .hero-title {
@@ -1726,6 +1809,24 @@ html {
         transform: scale(0.9);
         background: var(--primary-sage);
         color: var(--white);
+    }
+    
+    /* Performance optimizations for mobile scrolling */
+    .floating-shape {
+        animation: none; /* Disable animations on mobile */
+        display: none; /* Hide floating shapes on mobile */
+    }
+    
+    .service-card:hover,
+    .testimonial-card:hover,
+    .pricing-card:hover {
+        transform: none; /* Disable hover transforms on mobile */
+    }
+    
+    /* Reduce backdrop-filter usage on mobile */
+    .contact-item {
+        backdrop-filter: none;
+        background: rgba(255, 255, 255, 0.9);
     }
 }
 
